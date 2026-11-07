@@ -178,6 +178,12 @@ export const getLibraryDefaultCategoryId = (): number | undefined => {
 };
 
 export interface ChapterGeneralSettings {
+  /**
+   * Uses the ported New-moon-2 (wor) reader for chapter rendering instead of
+   * the classic LNReader WebView. The classic reader stays available as the
+   * fallback while the port matures.
+   */
+  useNewMoonReader: boolean;
   keepScreenOn: boolean;
   fullScreenMode: boolean;
   pageReader: boolean;
@@ -305,6 +311,7 @@ const initialBrowseSettings: BrowseSettings = {
 };
 
 export const initialChapterGeneralSettings: ChapterGeneralSettings = {
+  useNewMoonReader: true,
   keepScreenOn: true,
   fullScreenMode: true,
   pageReader: false,

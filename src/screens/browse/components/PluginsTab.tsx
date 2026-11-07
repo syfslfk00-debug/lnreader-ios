@@ -61,7 +61,16 @@ const PluginRow = memo(
     const isInstalled = status !== 'available';
 
     return (
-      <View style={styles.pluginRow}>
+      <View
+        testID="browse-plugin-row"
+        style={[
+          styles.pluginRow,
+          {
+            backgroundColor: theme.surface,
+            borderColor: theme.outlineVariant,
+          },
+        ]}
+      >
         <Pressable
           accessibilityLabel={
             isInstalled
@@ -322,7 +331,7 @@ export const PluginsTab = memo(
     return (
       <LegendList
         data={entries}
-        estimatedItemSize={64}
+        estimatedItemSize={88}
         getItemType={item => item.type}
         keyExtractor={item => item.key}
         ListEmptyComponent={
@@ -389,20 +398,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   icon: {
-    borderRadius: 4,
-    height: 44,
-    width: 44,
+    borderRadius: 10,
+    height: 48,
+    width: 48,
   },
   name: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 15,
+    fontWeight: '600',
+    lineHeight: 21,
   },
   pluginRow: {
     alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
-    minHeight: 64,
+    minHeight: 76,
+    marginBottom: 10,
     overflow: 'hidden',
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 10,
     position: 'relative',
   },

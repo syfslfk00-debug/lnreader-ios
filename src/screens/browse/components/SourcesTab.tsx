@@ -1,5 +1,12 @@
 import { memo, useCallback, useMemo } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import {
   LegendList,
   LegendListRenderItemProps,
@@ -17,10 +24,10 @@ import { BrowseScreenProps } from '@navigators/types';
 import { PluginItem } from '@plugins/types';
 import { getString } from '@i18n/translations';
 import { ThemeColors } from '@theme/types';
-import { getLocaleLanguageName } from '@utils/constants/languages';
 
 import DiscoverCard from '../discover/DiscoverCard';
 import { buildSourceEntries, SourceEntry } from '../utils/buildBrowseEntries';
+import { getPluginDomain } from '../utils/pluginDomain';
 
 interface SourcesTabProps {
   navigation: BrowseScreenProps['navigation'];
@@ -29,7 +36,7 @@ interface SourcesTabProps {
   theme: ThemeColors;
 }
 
-interface SourceRowProps {
+interface SourceCardProps {
   isPinned: boolean;
   onLatestPress: (plugin: PluginItem) => void;
   onPinPress: (plugin: PluginItem) => void;
@@ -38,7 +45,20 @@ interface SourceRowProps {
   theme: ThemeColors;
 }
 
-const SourceRow = memo(
+/**
+ * Source card — visual reference: the Suwayomi browse screen.
+ *
+ * One consistent card per source:
+ *   [icon] Name          [الأحدث chip] [pin]
+ *          domain (muted, only when the site field actually parses)
+ *
+ * The card is fully logical-property based, so in Arabic the icon sits on
+ * the right, the text flows next to it and the actions sit on the left —
+ * the RTL layout is the design, not a mirror hack. The language is NOT
+ * repeated inside the card: language section headers already group the
+ * list; the secondary line is the source's real domain (or omitted).
+ */
+const SourceCard = memo(
   ({
     isPinned,
     onLatestPress,
@@ -46,61 +66,83 @@ const SourceRow = memo(
     onPress,
     plugin,
     theme,
-  }: SourceRowProps) => (
-    <View style={styles.sourceRow}>
-      <Pressable
-        accessibilityLabel={`${getString('browse')} ${plugin.name}`}
-        accessibilityRole="button"
-        style={styles.sourceRowAction}
-        android_ripple={{ color: theme.rippleColor }}
-        onPress={() => onPress(plugin)}
-      />
-      <View pointerEvents="none" style={styles.sourceMainContent}>
-        <Image
-          source={{ uri: plugin.iconUrl }}
-          style={[styles.icon, { backgroundColor: theme.surfaceVariant }]}
-        />
-        <View style={styles.details}>
-          <Text
-            numberOfLines={1}
-            style={[styles.name, { color: theme.onSurface }]}
-          >
-            {plugin.name}
-          </Text>
-          <Text
-            numberOfLines={1}
-            style={[styles.description, { color: theme.onSurfaceVariant }]}
-          >
-            {getLocaleLanguageName(plugin.lang)}
-          </Text>
-        </View>
-      </View>
-      <Pressable
-        accessibilityLabel={`${getString('browseScreen.latest')} ${
-          plugin.name
-        }`}
-        accessibilityRole="button"
-        style={styles.latestButton}
-        hitSlop={8}
-        onPress={() => onLatestPress(plugin)}
+  }: SourceCardProps) => {
+    const domain = useMemo(() => getPluginDomain(plugin), [plugin]);
+
+    return (
+      <View
+        testID="browse-source-card"
+        accessibilityLabel={`${plugin.name}`}
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.surface,
+            borderColor: theme.outlineVariant,
+          },
+        ]}
       >
-        <Text style={[styles.latestText, { color: theme.primary }]}>
-          {getString('browseScreen.latest')}
-        </Text>
-      </Pressable>
-      <IconButtonV2
-        accessibilityLabel={
-          isPinned
-            ? getString('browseScreen.unpinSource', { name: plugin.name })
-            : getString('browseScreen.pinSource', { name: plugin.name })
-        }
-        name={isPinned ? 'pin' : 'pin-outline'}
-        color={isPinned ? theme.primary : theme.onSurfaceVariant}
-        onPress={() => onPinPress(plugin)}
-        theme={theme}
-      />
-    </View>
-  ),
+        <Pressable
+          accessibilityLabel={`${getString('browse')} ${plugin.name}`}
+          accessibilityRole="button"
+          style={styles.cardAction}
+          android_ripple={{ color: theme.rippleColor }}
+          onPress={() => onPress(plugin)}
+        />
+        <View pointerEvents="none" style={styles.cardMainContent}>
+          <Image
+            source={{ uri: plugin.iconUrl }}
+            style={[styles.icon, { backgroundColor: theme.surfaceVariant }]}
+          />
+          <View style={styles.details}>
+            <Text
+              numberOfLines={1}
+              style={[styles.name, { color: theme.onSurface }]}
+            >
+              {plugin.name}
+            </Text>
+            {domain ? (
+              <Text
+                numberOfLines={1}
+                style={[styles.domain, { color: theme.onSurfaceVariant }]}
+              >
+                {domain}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+        <Pressable
+          accessibilityLabel={`${getString('browseScreen.latest')} ${
+            plugin.name
+          }`}
+          accessibilityRole="button"
+          style={[
+            styles.latestChip,
+            {
+              backgroundColor: theme.primary + '14',
+              borderColor: theme.primary + '3D',
+            },
+          ]}
+          hitSlop={6}
+          onPress={() => onLatestPress(plugin)}
+        >
+          <Text style={[styles.latestChipText, { color: theme.primary }]}>
+            {getString('browseScreen.latest')}
+          </Text>
+        </Pressable>
+        <IconButtonV2
+          accessibilityLabel={
+            isPinned
+              ? getString('browseScreen.unpinSource', { name: plugin.name })
+              : getString('browseScreen.pinSource', { name: plugin.name })
+          }
+          name={isPinned ? 'pin' : 'pin-outline'}
+          color={isPinned ? theme.primary : theme.onSurfaceVariant}
+          onPress={() => onPinPress(plugin)}
+          theme={theme}
+        />
+      </View>
+    );
+  },
 );
 
 export const SourcesTab = memo(
@@ -110,6 +152,22 @@ export const SourcesTab = memo(
     const pinnedPlugins = usePinnedPlugins();
     const { setLastUsedPluginId, togglePinPlugin } = usePluginActions();
     const { showMyAnimeList, showAniList } = useBrowseSettings();
+    const { width: windowWidth } = useWindowDimensions();
+
+    /**
+     * Tablet/iPad refinement: cards stretch on phones, but get a readable
+     * maximum width and stay centered on wide screens instead of the text
+     * lines stretching across the whole 10-inch row.
+     */
+    const listPaddingHorizontal = useMemo(() => {
+      if (windowWidth >= 1024) {
+        return Math.round((windowWidth - 640) / 2);
+      }
+      if (windowWidth >= 768) {
+        return Math.round((windowWidth - 560) / 2);
+      }
+      return 12;
+    }, [windowWidth]);
 
     const navigateToSource = useCallback(
       (plugin: PluginItem, showLatestNovels?: boolean) => {
@@ -163,29 +221,43 @@ export const SourcesTab = memo(
       ({ item }: LegendListRenderItemProps<SourceEntry>) => {
         if (item.type === 'header') {
           return (
-            <Text
-              style={[styles.sectionHeader, { color: theme.onSurfaceVariant }]}
+            <View
+              style={[
+                styles.sectionHeaderRow,
+                { paddingHorizontal: listPaddingHorizontal + 4 },
+              ]}
             >
-              {item.title}
-            </Text>
+              <Text
+                style={[styles.sectionHeader, { color: theme.onSurfaceVariant }]}
+              >
+                {item.title}
+              </Text>
+              <View
+                style={[styles.sectionHeaderRule, { borderColor: theme.outlineVariant }]}
+              />
+            </View>
           );
         }
 
         if (item.type === 'discover') {
           const isAniList = item.tracker === 'AniList';
           return (
-            <DiscoverCard
-              theme={theme}
-              icon={
-                isAniList
-                  ? require('../../../../assets/anilist.png')
-                  : require('../../../../assets/mal.png')
-              }
-              trackerName={item.tracker}
-              onPress={() =>
-                navigation.navigate(isAniList ? 'BrowseAL' : 'BrowseMal')
-              }
-            />
+            <View
+              style={{ paddingHorizontal: listPaddingHorizontal }}
+            >
+              <DiscoverCard
+                theme={theme}
+                icon={
+                  isAniList
+                    ? require('../../../../assets/anilist.png')
+                    : require('../../../../assets/mal.png')
+                }
+                trackerName={item.tracker}
+                onPress={() =>
+                  navigation.navigate(isAniList ? 'BrowseAL' : 'BrowseMal')
+                }
+              />
+            </View>
           );
         }
 
@@ -208,23 +280,33 @@ export const SourcesTab = memo(
         }
 
         return (
-          <SourceRow
-            plugin={item.plugin}
-            isPinned={item.isPinned}
-            onPress={openSource}
-            onLatestPress={openLatest}
-            onPinPress={togglePin}
-            theme={theme}
-          />
+          <View style={{ paddingHorizontal: listPaddingHorizontal }}>
+            <SourceCard
+              plugin={item.plugin}
+              isPinned={item.isPinned}
+              onPress={openSource}
+              onLatestPress={openLatest}
+              onPinPress={togglePin}
+              theme={theme}
+            />
+          </View>
         );
       },
-      [navigation, onOpenPlugins, openLatest, openSource, theme, togglePin],
+      [
+        listPaddingHorizontal,
+        navigation,
+        onOpenPlugins,
+        openLatest,
+        openSource,
+        theme,
+        togglePin,
+      ],
     );
 
     return (
       <LegendList
         data={entries}
-        estimatedItemSize={64}
+        estimatedItemSize={88}
         getItemType={item => item.type}
         keyExtractor={item => item.key}
         ListEmptyComponent={
@@ -233,7 +315,9 @@ export const SourcesTab = memo(
             theme={theme}
           />
         }
-        contentContainerStyle={!entries.length ? styles.emptyList : undefined}
+        contentContainerStyle={
+          !entries.length ? styles.emptyList : { paddingBottom: 24 }
+        }
         recycleItems
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
@@ -243,63 +327,80 @@ export const SourcesTab = memo(
 );
 
 const styles = StyleSheet.create({
-  description: {
-    fontSize: 12,
-    lineHeight: 18,
+  card: {
+    alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    minHeight: 76,
+    marginBottom: 10,
+    overflow: 'hidden',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    position: 'relative',
+  },
+  cardAction: {
+    bottom: 0,
+    start: 0,
+    end: 0,
+    top: 0,
+    position: 'absolute',
+  },
+  cardMainContent: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
   },
   details: {
     flex: 1,
-    marginStart: 16,
+    marginStart: 14,
   },
-  icon: {
-    borderRadius: 4,
-    height: 44,
-    width: 44,
+  domain: {
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 2,
+    opacity: 0.85,
   },
   emptyList: {
     flexGrow: 1,
   },
+  icon: {
+    borderRadius: 10,
+    height: 48,
+    width: 48,
+  },
   inlineEmpty: {
     height: 240,
   },
-  latestButton: {
-    borderRadius: 24,
+  latestChip: {
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginStart: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 6,
   },
-  latestText: {
-    fontSize: 14,
-    fontWeight: '600',
+  latestChipText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   name: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 15,
+    fontWeight: '600',
+    lineHeight: 21,
   },
   sectionHeader: {
-    fontSize: 14,
-    fontWeight: '600',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+    paddingVertical: 12,
   },
-  sourceRow: {
+  sectionHeaderRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    minHeight: 64,
-    overflow: 'hidden',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    position: 'relative',
+    gap: 12,
   },
-  sourceMainContent: {
-    alignItems: 'center',
+  sectionHeaderRule: {
+    borderTopWidth: StyleSheet.hairlineWidth,
     flex: 1,
-    flexDirection: 'row',
-  },
-  sourceRowAction: {
-    bottom: 0,
-    start: 0,
-    position: 'absolute',
-    end: 0,
-    top: 0,
   },
 });

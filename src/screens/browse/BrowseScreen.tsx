@@ -1,10 +1,11 @@
-import React, { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { TabView, type TabBarProps } from 'react-native-tab-view';
 
 import { useSearch } from '@hooks';
 import { useTheme } from '@hooks/persisted';
 import { getString } from '@i18n/translations';
+import { getAppDirection } from '@utils/rtl';
 
 import { SafeAreaView, SearchbarV2, TopTabBar } from '@components';
 import { BrowseScreenProps } from '@navigators/types';
@@ -16,15 +17,24 @@ type BrowseRoute = {
   title: string;
 };
 
-const routes: BrowseRoute[] = [
-  { key: 'sources', title: getString('browseScreen.sources') },
-  { key: 'plugins', title: getString('browseScreen.plugins') },
-];
-
 const BrowseScreen = ({ navigation }: BrowseScreenProps) => {
   const theme = useTheme();
   const { searchText, setSearchText, clearSearchbar } = useSearch();
   const layout = useWindowDimensions();
+
+  /**
+   * Routes are built inside the component so the tab titles re-resolve
+   * through i18n on every render. Module-scope `getString` calls captured a
+   * translation frozen at import time, which desynced the visible tab label
+   * from the selected-tab state when the language changed.
+   */
+  const routes = useMemo<BrowseRoute[]>(
+    () => [
+      { key: 'sources', title: getString('browseScreen.sources') },
+      { key: 'plugins', title: getString('browseScreen.plugins') },
+    ],
+    [],
+  );
 
   const searchbarActions = useMemo(
     () =>
@@ -60,9 +70,9 @@ const BrowseScreen = ({ navigation }: BrowseScreenProps) => {
     [navigation],
   );
 
-  const [index, setIndex] = React.useState(0);
+  const [index, setIndex] = useState(0);
   const openPlugins = useCallback(() => setIndex(1), []);
-  const navigationState = useMemo(() => ({ index, routes }), [index]);
+  const navigationState = useMemo(() => ({ index, routes }), [index, routes]);
   const initialLayout = useMemo(
     () => ({ width: layout.width }),
     [layout.width],
@@ -148,6 +158,7 @@ const BrowseScreen = ({ navigation }: BrowseScreenProps) => {
         renderScene={renderScene}
         onIndexChange={setIndex}
         renderTabBar={renderTabBar}
+        direction={getAppDirection()}
         lazy
         lazyPreloadDistance={0}
         swipeEnabled={false}

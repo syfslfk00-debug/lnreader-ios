@@ -3,6 +3,14 @@ const fs = require('fs');
 const path = require('path');
 
 const READER_ASSETS_DIR = 'ReaderAssets';
+/**
+ * Subtrees copied from assets/reader into the native projects:
+ *   - css/js/fonts : the classic LNReader WebView reader runtime
+ *   - wor          : the ported New-moon-2 reader engine (worShell/worCSS
+ *                    output HTML is loaded with baseUrl pointing here, so the
+ *                    bundled local fonts resolve relative to it)
+ */
+const ASSET_SUBDIRS = ['css', 'js', 'fonts', 'wor'];
 
 /**
  * Packages the reader WebView runtime (css/js/fonts) into the native project:
@@ -26,7 +34,7 @@ const withReaderAssets = (config) => {
 
       fs.mkdirSync(assetsDir, { recursive: true });
 
-      for (const subdir of ['css', 'js', 'fonts']) {
+      for (const subdir of ASSET_SUBDIRS) {
         const src = path.join(sourceRoot, subdir);
         const dest = path.join(assetsDir, subdir);
         if (fs.existsSync(src)) {
@@ -51,7 +59,7 @@ const withReaderAssets = (config) => {
       fs.rmSync(destDir, { recursive: true, force: true });
       fs.mkdirSync(destDir, { recursive: true });
 
-      for (const subdir of ['css', 'js', 'fonts']) {
+      for (const subdir of ASSET_SUBDIRS) {
         const src = path.join(sourceRoot, subdir);
         const dest = path.join(destDir, subdir);
         if (fs.existsSync(src)) {

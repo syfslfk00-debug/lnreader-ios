@@ -630,6 +630,13 @@ export interface StringMap {
   'readerScreen.tts.selectVoice': 'string';
   'readerScreen.tts.autoPageAdvance': 'string';
   'readerScreen.tts.scrollToTop': 'string';
+  'readerScreen.saved': 'string';
+  'readerScreen.ttsIdle': 'string';
+  'readerScreen.ttsPlay': 'string';
+  'readerScreen.ttsPause': 'string';
+  'readerScreen.ttsStop': 'string';
+  'readerScreen.ttsNext': 'string';
+  'readerScreen.ttsPrevious': 'string';
   'readerSettings.autoScrollInterval': 'string';
   'readerSettings.autoScrollOffset': 'string';
   'readerSettings.backgroundColor': 'string';
@@ -659,6 +666,8 @@ export interface StringMap {
   'readerSettings.tabTheme': 'string';
   'readerSettings.tabNavigation': 'string';
   'readerSettings.tabAccessibility': 'string';
+  'readerSettings.useNewMoonReader': 'string';
+  'readerSettings.useNewMoonReaderDesc': 'string';
   'sourceScreen.noResultsFound': 'string';
   'statsScreen.downloadedChapters': 'string';
   'statsScreen.genreDistribution': 'string';

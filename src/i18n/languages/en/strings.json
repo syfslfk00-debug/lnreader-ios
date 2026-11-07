@@ -736,7 +736,14 @@
       "selectVoice": "Select Voice",
       "autoPageAdvance": "Auto Page Advance",
       "scrollToTop": "Scroll to Top"
-    }
+    },
+    "saved": "Saved",
+    "ttsIdle": "Ready for text-to-speech",
+    "ttsPlay": "Play",
+    "ttsPause": "Pause",
+    "ttsStop": "Stop",
+    "ttsNext": "Next paragraph",
+    "ttsPrevious": "Previous paragraph"
   },
   "readerSettings": {
     "autoScrollInterval": "Scroll interval (seconds)",
@@ -767,7 +774,9 @@
     "tabDisplay": "Display",
     "tabTheme": "Theme",
     "tabNavigation": "Navigation",
-    "tabAccessibility": "Accessibility"
+    "tabAccessibility": "Accessibility",
+    "useNewMoonReader": "New Moon reader (new engine)",
+    "useNewMoonReaderDesc": "Render chapters with the ported New-moon-2 reader engine. Turn off to fall back to the classic reader."
   },
   "sourceScreen": {
     "noResultsFound": "No results found"

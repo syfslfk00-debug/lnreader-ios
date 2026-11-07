@@ -1,5 +1,8 @@
 import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { useChapterGeneralSettings, useTheme } from '@hooks/persisted';
+import {
+  useChapterGeneralSettings,
+  useTheme,
+} from '@hooks/persisted';
 
 import ReaderAppbar from './components/ReaderAppbar';
 import ReaderFooter from './components/ReaderFooter';
@@ -12,6 +15,7 @@ import { ErrorScreenV2 } from '@components';
 import { ChapterScreenProps } from '@navigators/types';
 import { getString } from '@i18n/translations';
 import KeepScreenAwake from './components/KeepScreenAwake';
+import { WorReaderScreen } from './wor/WorReaderScreen';
 import {
   ChapterContextProvider,
   useChapterContext,
@@ -22,7 +26,6 @@ import { useBackHandler } from '@hooks/index';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   InteractionManager,
-  I18nManager,
   Keyboard,
   Share,
   StyleSheet,
@@ -32,15 +35,29 @@ import { Drawer } from 'react-native-drawer-layout';
 import { EMPTY_READER_SEARCH_RESULT, ReaderSearchResult } from './types';
 import * as Linking from 'expo-linking';
 import { resolveUrl } from '@services/plugin/fetch';
+import { resolveAppIsRTL } from '@utils/rtl';
 
 const Chapter = ({ route, navigation }: ChapterScreenProps) => (
   <ChapterContextProvider
     novel={route.params.novel}
     initialChapter={route.params.chapter}
   >
-    <ReaderDrawerLayout route={route} navigation={navigation} />
+    <ReaderBody route={route} navigation={navigation} />
   </ChapterContextProvider>
 );
+
+/**
+ * Chooses between the ported New-moon-2 (wor) reader and the classic
+ * LNReader reader. The ported reader is the default; the classic reader is
+ * kept as the fallback (Settings → Reader → useNewMoonReader).
+ */
+const ReaderBody = ({ route, navigation }: ChapterScreenProps) => {
+  const { useNewMoonReader = true } = useChapterGeneralSettings();
+  if (useNewMoonReader) {
+    return <WorReaderScreen navigation={navigation} route={route} />;
+  }
+  return <ReaderDrawerLayout route={route} navigation={navigation} />;
+};
 
 const ReaderDrawerLayout = ({ route, navigation }: ChapterScreenProps) => {
   const theme = useTheme();
@@ -101,7 +118,7 @@ const ReaderDrawerLayout = ({ route, navigation }: ChapterScreenProps) => {
   return (
     <Drawer
       drawerStyle={drawerStyle}
-      drawerPosition={I18nManager.isRTL ? 'right' : 'left'}
+      drawerPosition={resolveAppIsRTL() ? 'right' : 'left'}
       open={open}
       onOpen={openDrawer}
       onClose={closeDrawer}

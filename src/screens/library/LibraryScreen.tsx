@@ -36,6 +36,7 @@ import { Actionbar } from '@components/Actionbar/Actionbar';
 import { useAppSettings, useHistory, useTheme } from '@hooks/persisted';
 import { useSearch, useBackHandler, useBoolean } from '@hooks';
 import { getString } from '@i18n/translations';
+import { getAppDirection } from '@utils/rtl';
 import { FAB, Portal } from 'react-native-paper';
 import {
   markAllChaptersRead,
@@ -520,6 +521,7 @@ const LibraryScreen = ({ navigation }: LibraryScreenProps) => {
             commonOptions={{
               label: renderLabel,
             }}
+            direction={getAppDirection()}
             lazy
             navigationState={navigationState}
             renderTabBar={renderTabBar}

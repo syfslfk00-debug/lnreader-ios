@@ -1,7 +1,11 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { useTheme, useChapterReaderSettings } from '@hooks/persisted';
+import {
+  useTheme,
+  useChapterReaderSettings,
+  useChapterGeneralSettings,
+} from '@hooks/persisted';
 import { getString } from '@i18n/translations';
 import ReaderTextSize from '../ReaderTextSize';
 import ReaderValueChange from '@screens/reader/components/ReaderBottomSheet/ReaderValueChange';
@@ -11,10 +15,15 @@ import { useBoolean } from '@hooks';
 import { Portal } from 'react-native-paper';
 import FontPickerModal from '../Modals/FontPickerModal';
 import { readerFonts } from '@utils/constants/readerConstants';
+import SettingSwitch from '../../components/SettingSwitch';
 
 const DisplayTab: React.FC = () => {
   const theme = useTheme();
   const readerSettings = useChapterReaderSettings();
+  const {
+    useNewMoonReader = true,
+    setChapterGeneralSettings,
+  } = useChapterGeneralSettings();
   const readerFontPickerModal = useBoolean();
 
   const labelStyle = [styles.label, { color: theme.onSurface }];
@@ -31,6 +40,15 @@ const DisplayTab: React.FC = () => {
         contentContainerStyle={styles.contentContainer}
       >
         <View style={styles.content}>
+          <SettingSwitch
+            value={useNewMoonReader}
+            label={getString('readerSettings.useNewMoonReader')}
+            description={getString('readerSettings.useNewMoonReaderDesc')}
+            onPress={() =>
+              setChapterGeneralSettings({ useNewMoonReader: !useNewMoonReader })
+            }
+            theme={theme}
+          />
           <ReaderTextSize labelStyle={labelStyle} />
           <ReaderValueChange
             labelStyle={labelStyle}

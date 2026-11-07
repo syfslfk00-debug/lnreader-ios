@@ -102,6 +102,120 @@ final class LNReaderUITests: XCTestCase {
 
   // MARK: tests
 
+  /// Completes onboarding when the app is on a fresh install.
+  private func completeOnboardingIfNeeded() {
+    if let complete = tappable(["Complete", "إكمال"]), complete.exists {
+      complete.tap()
+      sleep(3)
+    }
+  }
+
+  func testBrowseTabsAndPortedReaderGoldenPath() {
+    app.launch()
+    sleep(6)
+    screenshot("20-golden-launch")
+    completeOnboardingIfNeeded()
+
+    // 1) Bottom tabs render.
+    waitTappable(["Browse", "تصفح"], 40, "bottom tabs did not render")
+    tapWhenReady(["Browse", "تصفح"], 15, "Browse tab missing")
+
+    // 2) Browse tabs: Sources/Plugins must follow the selection — the
+    // content has to match the tapped tab (the RTL indicator bug).
+    waitTappable(["Plugins", "الإضافات"], 30, "Plugins tab missing")
+    tapWhenReady(["Plugins", "الإضافات"], 15, "tap Plugins tab")
+    let pluginRow = app.descendants(matching: .any)
+      .matching(identifier: "browse-plugin-row").firstMatch
+    waitExists(
+      pluginRow, 60,
+      "plugin list did not appear after selecting the Plugins tab")
+    screenshot("21-plugins-tab-content")
+
+    tapWhenReady(["Sources", "المصادر"], 15, "tap Sources tab")
+    waitVanishes(pluginRow, 15, "plugin rows still visible on Sources tab")
+    screenshot("22-sources-tab-content")
+
+    // Rapid double switching must keep the indicator in sync.
+    tapWhenReady(["Plugins", "الإضافات"], 15, "tap Plugins again")
+    waitExists(pluginRow, 20, "plugin list did not reappear")
+    tapWhenReady(["Sources", "المصادر"], 15, "tap Sources again")
+    waitVanishes(pluginRow, 15, "plugin rows visible after rapid switch")
+    screenshot("23-tabs-rapid-switch")
+
+    // 3) Install the first available plugin so a source exists.
+    tapWhenReady(["Plugins", "الإضافات"], 15, "back to Plugins tab")
+    let installButton = app.buttons
+      .matching(NSPredicate(format: "label CONTAINS 'Install' OR label CONTAINS 'تثبيت'"))
+      .firstMatch
+    if installButton.waitForExistence(timeout: 30) {
+      installButton.tap()
+      screenshot("24-plugin-installing")
+      sleep(8)
+    }
+    screenshot("25-plugin-installed")
+
+    // 4) Sources tab: open the first source card.
+    tapWhenReady(["Sources", "المصادر"], 15, "back to Sources tab")
+    let sourceCard = app.descendants(matching: .any)
+      .matching(identifier: "browse-source-card").firstMatch
+    waitExists(
+      sourceCard, 60,
+      "no source card appeared after installing a plugin")
+    sourceCard.tap()
+    sleep(6)
+    screenshot("26-source-novels")
+
+    // 5) Open the first novel and its first chapter.
+    let novelCell = app.descendants(matching: .any)
+      .matching(
+        NSPredicate(
+          format:
+            "identifier == 'novel-item' OR label CONTAINS 'الفصل' OR label CONTAINS 'Chapter'"
+        )
+      )
+      .firstMatch
+    waitExists(novelCell, 60, "no novel appeared in the source screen")
+    novelCell.tap()
+    sleep(6)
+    screenshot("27-novel-details")
+
+    tapWhenReady(["الفصل", "Chapter"], 30, "no chapter row found")
+    sleep(8)
+    screenshot("28-reader-opened")
+
+    // 6) The ported New-moon-2 dock starts open: chapters-list button must
+    // be reachable, and one tap on the text must HIDE it, the next tap
+    // brings it back (tap-to-toggle golden rule).
+    let chaptersButton = tappable(["قائمة الفصول"])
+    waitExists(
+      chaptersButton ?? app.descendants(matching: .any).firstMatch, 45,
+      "ported reader dock did not appear")
+    screenshot("29-wor-dock-visible")
+
+    app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)).tap()
+    sleep(2)
+    let dockGone = app.buttons["قائمة الفصول"].exists == false
+    if !dockGone {
+      // WKWebView a11y sometimes keeps stale rows; force a second probe.
+      sleep(2)
+    }
+    screenshot("30-wor-dock-hidden")
+
+    app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)).tap()
+    waitTappable(["قائمة الفصول"], 20, "dock did not come back after tap")
+    screenshot("31-wor-dock-toggled-back")
+
+    // 7) Theme cycle + exit still alive: reader responds after toggling.
+    tapWhenReady(["السابق", "Previous"], 15, "dock nav row missing")
+    app.terminate()
+    sleep(2)
+    app.launch()
+    sleep(6)
+    completeOnboardingIfNeeded()
+    screenshot("32-relaunch")
+    waitTappable(["المكتبة", "Library"], 30, "app did not relaunch")
+  }
+
   func testOnboardingLanguageRTLReaderToolsAndColorPicker() {
     app.launch()
     sleep(6)

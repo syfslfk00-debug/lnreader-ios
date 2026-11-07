@@ -110,18 +110,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   segmentFirst: {
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
+    borderStartWidth: 1,
+    borderEndWidth: 1,
+    borderTopStartRadius: 20,
+    borderBottomStartRadius: 20,
   },
   segmentMiddle: {
-    borderRightWidth: 1,
+    borderEndWidth: 1,
   },
   segmentLast: {
-    borderRightWidth: 1,
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
+    borderEndWidth: 1,
+    borderTopEndRadius: 20,
+    borderBottomEndRadius: 20,
   },
   segmentPressable: {
     flex: 1,

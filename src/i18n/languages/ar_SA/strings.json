@@ -218,8 +218,8 @@
     "installedPlugin": "تم تثبيت %{name}",
     "installedPlugins": "الإضافات المثبتة",
     "language": "اللغة",
-    "lastUsed": "اخر استخدام",
-    "latest": "الاخير",
+    "lastUsed": "المستخدمة مؤخرًا",
+    "latest": "الأحدث",
     "listEmpty": "تفعيل اللغات من الاعدادات",
     "migration": {
       "cover": "الغلاف",
@@ -736,7 +736,14 @@
       "selectVoice": "اختر الصوت",
       "autoPageAdvance": "الانتقال التلقائي للصفحة",
       "scrollToTop": "التمرير إلى الأعلى"
-    }
+    },
+    "saved": "تم الحفظ",
+    "ttsIdle": "جاهز للقراءة الصوتية",
+    "ttsPlay": "تشغيل",
+    "ttsPause": "إيقاف مؤقت",
+    "ttsStop": "إيقاف",
+    "ttsNext": "الفقرة التالية",
+    "ttsPrevious": "الفقرة السابقة"
   },
   "readerSettings": {
     "autoScrollInterval": "فاصل التمرير (ثواني)",
@@ -767,7 +774,9 @@
     "tabDisplay": "العرض",
     "tabTheme": "السمة",
     "tabNavigation": "التنقل",
-    "tabAccessibility": "إمكانية الوصول"
+    "tabAccessibility": "إمكانية الوصول",
+    "useNewMoonReader": "قارئ New Moon (المحرك الجديد)",
+    "useNewMoonReaderDesc": "استخدام محرك قارئ New-moon-2 المحمّل للعرض والتخصيص. أوقفه للرجوع للقارئ الكلاسيكي."
   },
   "sourceScreen": {
     "noResultsFound": "لم يتم العثور على أي نتائج"

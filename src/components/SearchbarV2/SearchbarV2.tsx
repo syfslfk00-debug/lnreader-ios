@@ -6,6 +6,7 @@ import { ThemeColors } from '../../theme/types';
 import Menu from '../Menu';
 import { MaterialDesignIconName } from '@type/icon';
 import { getString } from '@i18n/translations';
+import { resolveAppIsRTL } from '@utils/rtl';
 import { Pressable } from 'react-native-gesture-handler';
 
 export interface RightIcon {
@@ -75,7 +76,13 @@ const Searchbar: React.FC<SearcbarProps> = ({
               ? getString('common.back')
               : getString('common.search')
           }
-          name={handleBackAction ? 'arrow-left' : leftIcon}
+          name={
+            handleBackAction
+              ? resolveAppIsRTL()
+                ? 'arrow-right'
+                : 'arrow-left'
+              : leftIcon
+          }
           color={theme.onSurface}
           onPress={() => {
             if (handleBackAction) {

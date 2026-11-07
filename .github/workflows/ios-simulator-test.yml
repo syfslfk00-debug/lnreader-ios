@@ -281,6 +281,19 @@ jobs:
           cp /tmp/lnreader-e2e/*.png artifacts/e2e-screenshots/ 2>/dev/null || true
           ls -la artifacts/e2e-screenshots || true
 
+      # App-side console output (JS exceptions at launch show up here, not in
+      # the xcodebuild test log) — without this a blank-screen failure is
+      # undebuggable from CI.
+      - name: Collect app console log
+        if: always()
+        run: |
+          SIM_UDID=$(xcrun simctl list devices | grep "$SIM_NAME (" | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' | head -1)
+          xcrun simctl spawn "$SIM_UDID" log show \
+            --last 15m --style compact \
+            --predicate 'processImagePath CONTAINS "LNReader"' \
+            > artifacts/lnreader-console.log 2>&1 || true
+          tail -c 200000 artifacts/lnreader-console.log | grep -iE "error|exception|fatal|ReactNativeJS" | head -80 || true
+
       - name: Post-run stability watch (60s)
         run: |
           sleep 30
